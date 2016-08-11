@@ -7,6 +7,8 @@
 //
 
 #import "ViewController.h"
+#import "SecondViewController.h"
+
 
 @interface ViewController ()
 
@@ -32,6 +34,19 @@
     
     //设置电池栏的颜色
     self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
+    
+    
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(50, 100, 100, 20)];
+    [button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [button setTitle:@"push" forState:UIControlStateNormal];
+    [button addTarget:self action:@selector(push) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button];
+    
+}
+
+- (void)push
+{
+    [self.navigationController pushViewController:[SecondViewController new] animated:YES];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle
