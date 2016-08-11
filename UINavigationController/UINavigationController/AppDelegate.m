@@ -7,7 +7,8 @@
 //
 
 #import "AppDelegate.h"
-
+#import "ViewController.h"
+#import "NavViewController.h"
 @interface AppDelegate ()
 
 @end
@@ -17,6 +18,21 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    //实例化window
+    self.window = [[UIWindow alloc]initWithFrame:[[UIScreen mainScreen] bounds]];
+    self.window.backgroundColor = [UIColor whiteColor];
+    
+    //初始化导航控制器的根控制器
+    ViewController *root =[[ViewController alloc]init];
+    root.title = @"首页";
+    
+    //初始化导航控制器
+    NavViewController *nav = [[NavViewController alloc]initWithRootViewController:root];
+    self.window.rootViewController =nav;
+    
+    //使window成为主窗口并展示
+    [self.window makeKeyAndVisible];
     return YES;
 }
 

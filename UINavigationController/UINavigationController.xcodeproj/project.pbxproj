@@ -15,6 +15,8 @@
 		04210FD51D5C13FA0076789C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 04210FD31D5C13FA0076789C /* LaunchScreen.storyboard */; };
 		04210FE01D5C13FA0076789C /* UINavigationControllerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 04210FDF1D5C13FA0076789C /* UINavigationControllerTests.m */; };
 		04210FEB1D5C13FA0076789C /* UINavigationControllerUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 04210FEA1D5C13FA0076789C /* UINavigationControllerUITests.m */; };
+		042110031D5C20330076789C /* NavViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 042110021D5C20330076789C /* NavViewController.m */; };
+		042110061D5C215F0076789C /* UINavigationController+status.m in Sources */ = {isa = PBXBuildFile; fileRef = 042110051D5C215F0076789C /* UINavigationController+status.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +53,10 @@
 		04210FE61D5C13FA0076789C /* UINavigationControllerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UINavigationControllerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		04210FEA1D5C13FA0076789C /* UINavigationControllerUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UINavigationControllerUITests.m; sourceTree = "<group>"; };
 		04210FEC1D5C13FA0076789C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		042110011D5C20320076789C /* NavViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NavViewController.h; sourceTree = "<group>"; };
+		042110021D5C20330076789C /* NavViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NavViewController.m; sourceTree = "<group>"; };
+		042110041D5C215F0076789C /* UINavigationController+status.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UINavigationController+status.h"; sourceTree = "<group>"; };
+		042110051D5C215F0076789C /* UINavigationController+status.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UINavigationController+status.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,6 +111,10 @@
 				04210FC91D5C13FA0076789C /* AppDelegate.m */,
 				04210FCB1D5C13FA0076789C /* ViewController.h */,
 				04210FCC1D5C13FA0076789C /* ViewController.m */,
+				042110041D5C215F0076789C /* UINavigationController+status.h */,
+				042110051D5C215F0076789C /* UINavigationController+status.m */,
+				042110011D5C20320076789C /* NavViewController.h */,
+				042110021D5C20330076789C /* NavViewController.m */,
 				04210FCE1D5C13FA0076789C /* Main.storyboard */,
 				04210FD11D5C13FA0076789C /* Assets.xcassets */,
 				04210FD31D5C13FA0076789C /* LaunchScreen.storyboard */,
@@ -270,8 +280,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				042110061D5C215F0076789C /* UINavigationController+status.m in Sources */,
 				04210FCD1D5C13FA0076789C /* ViewController.m in Sources */,
 				04210FCA1D5C13FA0076789C /* AppDelegate.m in Sources */,
+				042110031D5C20330076789C /* NavViewController.m in Sources */,
 				04210FC71D5C13FA0076789C /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
