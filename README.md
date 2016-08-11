@@ -1,279 +1,139 @@
-iOS中,我所知的传值方法有以下这些.
-- 方法(属性传值)
-- 通知传值
-- 代理传值
-- block(块)
+#导航控制器
+![导航栏.png](http://upload-images.jianshu.io/upload_images/1711673-48522038af1662c1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+我们经常看到像这样的APP界面,由顶部一个导航栏作为纽带,连接整个APP.怎样实现它呢,iOS中有一个专门的类
+```
+UINavigationController
+```
+  - 导航控制器可以理解为一个容器,它提供了一个栈.最底部存放了我们要显示的根视图控制器,并为我们提供了push的方法,把我们想要跳转的另一个控制器压入栈中,也提供了pop方法,让我们可以回到某个想要的控制器.
+  - 去除storyboard
+    
+![QQ20160726-1@2x.png](http://upload-images.jianshu.io/upload_images/1711673-7b477f5b41a10d1c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
-#方法(属性传值)
-属性其实就是为我们生成一个全局变量,并为这个变量生成一个set方法以及get方法,所以利用属性传值,就是同个set方法,对这个变量进行传值,不过这种传值只能由前到后的传,而不能进行回调.
-
-```
-//传值方法
--(void)push:(id)sender
-{
-    SecondViewController *second = [[SecondViewController alloc]init];
-    second.labelText = @"方法传值";
-    [self.navigationController pushViewController:second animated:YES];
-}
-```
-```
-@interface SecondViewController : UIViewController
-//要传的属性
-@property(nonatomic,strong)NSString *labelText;
-
-@end
-```
-
-```
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    self.title = @"second";
-    self.view.backgroundColor = [UIColor whiteColor];
-    
-    //将传过来的值显示在Label上
-    UILabel *_aLabel = [[UILabel alloc]initWithFrame:CGRectMake(100, 100, 100, 100)];
-    _aLabel.text = _labelText;
-    [self.view addSubview:_aLabel];
-}
-```
-
-![结果](http://upload-images.jianshu.io/upload_images/1711673-f08c3ad73382ee2f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-
-这样就完成了方法传值,很简单,相信大家也都懂,就不浪费时间了,接下来说说通知
-#通知传值
-- 观察者模式：多个观察者对象同时监听某一个主题对象。这个主题对象在状态发生变化时，会通知所有观察者对象，使它们能够做出相应的举措。
-- NSNotificationCenter(通知中心，观察者统一监听对象，是一个单例)
-  - 上面说过了,观察者模式是监听一个主题对象,所以通知中心是一个单例,主要的操作流程就是,成为观察者,然后通知中心发出通知,观察者响应,那怎么实现呢?
-我们先看看怎么为通知中心添加观察者
-```
--(void)addObserver:(id)observer selector:(SEL)aSelector name:(nullable NSString *)aName object:(nullable id)anObject;
-```
-API中提供了这个方法,首先我们需要一个观察者,并为它指定一个方法，名字和对象。接受到通知时，执行方法,下面是实际调用,添加了记得移除哦.
-```
--(void)viewDidLoad {
-    [super viewDidLoad]; 
-    //添加一个观察者，可以为它指定一个方法，名字和对象。接受到通知时，执行方法
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(changeName:) name:@"CHANGENAMENOTIFICE" object:nil];
-}
--(void)changeName:(NSNotification *)noti
-{
-  if (noti.userInfo)
-      {
-          if (noti.object)
-              self.title = [NSString stringWithFormat:@"%@+%@",noti.object,noti.userInfo[@"name"  ]];
-      }
-      else
-      {
-          if (noti.object)
-              self.title = [NSString stringWithFormat:@"%@",noti.object];
-      }
-}
--(void)dealloc
-{
-    //移除监听者
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"CHANGENAMENOTIFICE" object:nil];
-}
-```
-观察者添加完毕了,那接下来怎么发送呢
-```
--(void)postNotification:(NSNotification *)notification;
--(void)postNotificationName:(NSString *)aName object:(nullable id)anObject;
--(void)postNotificationName:(NSString *)aName object:(nullable id)anObject userInfo:(nullable NSDictionary *)aUserInfo;
-```
-API中同样提供了3种方法,下面我们新建一个发送通知的控制器
-```
--(void)viewDidLoad {
-    [super viewDidLoad];
-    self.title = @"second";
-    self.view.backgroundColor = [UIColor whiteColor];
-    //开始发送通知
-    UIButton *aBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-    [aBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-    [aBtn setTitle:@"发送通知回传参数" forState:UIControlStateNormal];
-    aBtn.frame = CGRectMake(100, 150, 200, 100);
-    [aBtn addTarget:self action:@selector(pop:) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:aBtn];
-}
--(void)pop:(UIButton *)sender
-{
-      //第一种,生成一个通知对象,并配置好想要传递的对象
-      NSNotification *noti = [[NSNotification alloc]initWithName:@"CHANGENAMENOTIFICE" object:@"haha" userInfo:@{@"name":@"haha"}];
-      [[NSNotificationCenter defaultCenter] postNotification:noti];
-    
-      //第二种,直接通过通知名称,传递一个想要传递的对象
-      [[NSNotificationCenter defaultCenter] postNotificationName:@"CHANGENAMENOTIFICE" object:@"haha"];
-    
-      //第三种,直接通过通知名称,传递一个想要传递的对象以及传递的userInfo
-      [[NSNotificationCenter defaultCenter] postNotificationName:@"CHANGENAMENOTIFICE" object:@"haha" userInfo:@{@"name":@"haha"}];
-      [self.navigationController popViewControllerAnimated:YES];
-}
-```
-
-![回调前.png](http://upload-images.jianshu.io/upload_images/1711673-5bc1b5d0ad3d0ee6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-
-![点击通知按钮.png](http://upload-images.jianshu.io/upload_images/1711673-a1551a908e3a7cbd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-
-![通知回调后.png](http://upload-images.jianshu.io/upload_images/1711673-3794c7fd64c0d673.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-
-通知就先讲这么多,接下来讲讲代理
-#代理(由三部分组成)
-- 协议：用来指定代理双方可以做什么，必须做什么。
-- 代理：根据指定的协议，完成委托方需要实现的功能。﻿
-- 委托：根据指定的协议，指定代理去完成什么功能。
-简单来说吧,代理模式,就是委托人没办法直接完成这件事,所以需要拟定一份协议,由一个代理人来帮他做这件事.就像房产中介跟房主一样.房主因为种种原因不想自己去寻找买房人,所以拟了一份协议,由中介去帮他寻找,下面说说OC中的实现.
-  - protocol(协议)
-```
-@protocol <#protocol name#> <NSObject>
-<#methods#>
-@end
-```
-这是OC中协议的写法,但我们需要注意的是,protocol中有两种方法,一种是必须实现的方法,对应关键字@required;一种是可选的实现方法,对应关键字@optional
-下面我们定义一个changeName协议,里面有一个必须实现的修改名称的方法以及一个可选的修改背景颜色的方法.
-```
-@protocol changeName <NSObject>
-@required
--(void)changeTitle:(NSString *)name;
-@optional
--(void)changeBackgroundColor:(UIColor *)color;
-@end
-```
-协议有了,那么就需要一个委托人了,我们这里把SecondViewController作为委托人,既然是委托人,那么它就必须有一个代理人对象
-```
-@interface SecondViewController : UIViewController
-@property(nonatomic,assign)id<changeName> changeNameDelegate;
-@end
-```
-oc中对象后加<>,在尖括号里面填写协议名称,即表示签署了改协议.我们使ViewController成为代理人,就必须向签署协议
-```
-@interface ViewController ()<changeName>
-@end
-@implementation ViewController
--(void)changeTitle:(NSString *)name
-{
-    self.title = name;
-}
--(void)changeBackgroundColor:(UIColor *)color
-{
-    self.view.backgroundColor = color;
-}
-```
-然后使ViewController成为SecondViewController的代理人
-```
--(void)push:(id)sender
-{
-      SecondViewController *second = [[SecondViewController alloc]init];
-      second.labelText = @"传值";
-      second.changeNameDelegate = self;
-      [self.navigationController pushViewController:second animated:YES];
-}
-```
-委托人有了,代理人也有了,那接下来委托人怎么让代理人做事呢.上代码
-```
--(void)viewDidLoad {
-    [super viewDidLoad];
-      //代理传值
-      UIButton *dBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-      [dBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-      [dBtn setTitle:@"代理传值" forState:UIControlStateNormal];
-      dBtn.frame = CGRectMake(100, 200, 200, 50);
-      [dBtn addTarget:self action:@selector(popD:) forControlEvents:UIControlEventTouchUpInside];
-      [self.view addSubview:dBtn];
-   }
--(void)popD:(UIButton *)sender
-{
-      // 判断代理对象是否实现这个方法，没有实现会导致崩溃﻿
-      if ([self.changeNameDelegate respondsToSelector:@selector(changeTitle:)])
-      {
-          //由代理人执行方法,接受name值
-          [self.changeNameDelegate changeTitle:@"haha"];
-      }
-      [self.navigationController popViewControllerAnimated:YES];
-}
-```
-切记在调用方法前,判断代理人是否实现了这个方法,否则就会crash掉
-
-![Snip20160809_4.png](http://upload-images.jianshu.io/upload_images/1711673-551b84f610af27a4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-
-![Snip20160809_5.png](http://upload-images.jianshu.io/upload_images/1711673-7e2e522d2a19c03a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-
-![Snip20160809_6.png](http://upload-images.jianshu.io/upload_images/1711673-2343f3b0093b5c23.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-
-
-#block
-- block
-  - 写法,从XCODE提供的typedef方法中,给出了block的写法.首先是返回类型<^块的名称><传入参数>,
+  - 生成控制器,在didFinishLaunchingWithOptions方法中,加入以下代码
 <pre><code>
-<#returnType#>(^<#name#>)(<#arguments#>);
+    self.window = [[UIWindow alloc]initWithFrame:[[UIScreen mainScreen] bounds]];
+
+    ViewController *root =[[ViewController alloc]init];
+
+    root.title = @"首页";
+
+    UINavigationController *nav = [[UINavigationController alloc]initWithRootViewController:root];
+
+    self.window.rootViewController =nav;
+
+    [self.window makeKeyAndVisible];
+
 </code></pre>
-  - 声明(我们声明了一个名为testBlock,传入两个int类型的变量,并返回一个数据类型为int的值)
+这样就能实现第一张图的效果,接下来是一些基本的设置.
+  - 导航栏颜色(barTintColor)
+    <pre><code>
+self.navigationController.navigationBar.barTintColor = [UIColor orangeColor];
+</code></pre>
+
+![
+![Uploading QQ20160726-3@2x_207292.png . . .]
+](http://upload-images.jianshu.io/upload_images/1711673-8fdb1806077d4654.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+  - 标题颜色
+ <pre><code>
+NSMutableDictionary *titleAttr = [NSMutableDictionary dictionary];
+
+    titleAttr[NSForegroundColorAttributeName] = [UIColor whiteColor];
+
+    titleAttr[NSFontAttributeName] = [UIFont boldSystemFontOfSize:18];
+
+    [self.navigationController.navigationBar setTitleTextAttributes:titleAttr];
+</code></pre>
+![QQ20160726-3@2x.png](http://upload-images.jianshu.io/upload_images/1711673-5cba28460f72885f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+这时候我们发现上面的电池栏颜色黑乎乎的很难看,我们会发现有些APP上面是白色的字体颜色,那怎么改变呢,下面提供两种方法,
+- 第一种
 ```
-int (^testBlock)(int a,int b);
+//设置电池栏的颜色
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
 ```
-  - 定义
+是不是有人加了没效果呢,没错.因为我们还少做了一步.找到info.plists.在里面添加下述字段,下拉条拉到最后就可以看到这个字段了,然后类型选择Boolean,值为NO;就能达到我们想要的效果
 ```
-testBlock = ^(int a,int b){
-        return a+b;
-    };
-```  
-  - 调用
+View controller-based status bar appearance
 ```
-int a =testBlock(1,2);
+这样就能达到效果了,但细心的人可能发现,API中这个方法在9.0中不建议使用了.
+
 ```
-这是基础的应用,然而这些我都知道,我怎么传值呢?我当时也是这么想的.别急,慢慢来.
-此处我们自定义一个button,我们把它的addTarget对象指向自己,然后用块传值.
-.h
+- (void)setStatusBarStyle:(UIStatusBarStyle)statusBarStyle animated:(BOOL)animated
+ NS_DEPRECATED_IOS(2_0, 9_0, "Use -[UIViewController preferredStatusBarStyle]") __TVOS_PROHIBITED;
 ```
-//定义一个结构体块
-typedef void(^block)(NSDictionary *dict);
-@interface BlockButton : UIButton
+那我们来看看他推荐使用的方法
+```
+- (UIStatusBarStyle)preferredStatusBarStyle
 {
-      //全局块变量,用来传值
-      block _aBlock;
+    return UIStatusBarStyleLightContent;
 }
-//为调用该块的对象提供一个定义块的接口
--(void)tranBlock:(block)block;
+```
+不过注意,如果在Info.pilsts里添加了我们上面说的字段,这段代码就不会生效了.把它删掉,再运行看效果,我们发现还是黑色的.为什么会这样.我们看官方的文档上的注释.
+These methods control the attributes of the status bar when this view controller is shown. They can be overridden in view controller subclasses to return the desired status bar attributes.
+他这里改变的是我们要展示的控制器的状态栏.但是我们这里覆盖的.是ViewController里的这个方法,而我们在AppDelgate里面设置的根控制器,是UINavigationController,所以我们改变的并非是他的状态栏.那怎么做呢?提供三种思路解决方案
+- 方案一:(类目:category)
+我们可以通过为UINavigationController添加类目,然后重写他的preferredStatusBarStyle方法
+```
+@interface UINavigationController (Status)
+@end
+@implementation UINavigationController (Status)
+-(UIStatusBarStyle)preferredStatusBarStyle
+{
+    return UIStatusBarStyleLightContent;
+}
 @end
 ```
-.m
+- 方案二:继承
+我们可以新建一个继承自UINavigationController的类,然后重写这个方法,这个很简单,就不多说了,demo上有
+- 方案三
+我们在显示控制器上,可以获取到navigationController的navigationBar,然后我们可以修改它的barStyle.
 ```
--(instancetype)initWithFrame:(CGRect)frame
-{
-      self = [super initWithFrame:frame];
-      //为按钮添加相应方法
-      [self addTarget:self action:@selector(click) forControlEvents:UIControlEventTouchUpInside];
-      return self;
-}
-//把实现方法传递给全局变量(_aBlock)
--(void)tranBlock:(block)block
-{
-      _aBlock = block;
-}
-//响应方法
--(void)click
-{
-      //调用_aBlock,传递一个key为name,值为a的字典
-      _aBlock(@{@"name":@"a"});
-}
+//设置电池栏的颜色
+    self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
 ```
-接下来我们在需要这个button的地方,先实例化button对象,并添加到视图上
+![Snip20160811_1.png](http://upload-images.jianshu.io/upload_images/1711673-fe050cf991e4f05a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+
+********
+基本的我们上面已经做到了,现在我们看看怎么跳转,上面其实也说过了,导航控制器是一个栈,为我们提供了push的方法,把我们想要跳转的另一个控制器压入栈中,也提供了pop方法,让我们可以回到某个想要的控制器.下面我们用代码看看怎么做.
 ```
-self.title = @"test";
-//实例化button
-    BlockButton *block = [[BlockButton alloc]initWithFrame:CGRectMake(100, 250, 100, 100)];
-[block setTitle:@"块传值" forState:UIControlStateNormal];
-    [block setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-//对button中的块进行定义
-    [block tranBlock:^(NSDictionary *dict) {
-      _aLabel.text = dict[@"name"];
-    }];
-    [self.view addSubview:block];
+- (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated; 
+// Uses a horizontal slide transition. Has no effect if the view controller is already in the stack.
 ```
+我们直接用上述的方法,就可以进行界面的推进,下面我们新建多两个类,这些我都会在demo上添加,这里就不多浪费笔墨来写了,有推自然有返回,Objective-C中提供了三种方法
+```
+- (nullable UIViewController *)popViewControllerAnimated:(BOOL)animated; 
+- (nullable NSArray<__kindof UIViewController *> *)popToViewController:(UIViewController *)viewController animated:(BOOL)animated;
+- (nullable NSArray<__kindof UIViewController *> *)popToRootViewControllerAnimated:(BOOL)animated; 
+```
+第一个方法会直接返回上一个控制器.第二个方法则会返回栈中的其中一个控制器,这个控制器必须在栈中.第三个方法会直接回到首页.
+![2016-08-11 12_03_36.gif](http://upload-images.jianshu.io/upload_images/1711673-3e4772630c3e56af.gif?imageMogr2/auto-orient/strip)
+这里发现我第三个界面返回按钮的颜色,以及导航栏整个都变样了,那我是怎么做到的呢.返回按钮很简单,我们只要改变barTintStyle就行啦
+```
+[[self.navigationController navigationBar] setBarTintColor:[UIColor colorWithRed:17.0/255 green:107.0/255 blue:173.0/255 alpha:1]];
+```
+接下来我们看看是怎么让导航栏的颜色改变的,其实我们是让他变成透明了.下面要提一下NavigationBar的两个属性
+```
+/*
+Same as using UIBarPositionAny in -setBackgroundImage:forBarPosition:barMetrics. Resizable images will be stretched
+vertically if necessary when the navigation bar is in the position UIBarPositionTopAttached.
+*/
+- (void)setBackgroundImage:(nullable UIImage *)backgroundImage forBarMetrics:(UIBarMetrics)barMetrics NS_AVAILABLE_IOS(5_0) UI_APPEARANCE_SELECTOR;
+/* Default is nil. When non-nil, a custom shadow image to show instead of the default shadow image. For a custom shadow to be shown, a custom background image must also be set with -setBackgroundImage:forBarMetrics: (if the default background image is used, the default shadow image will be used).
+ */
+@property(nullable, nonatomic,strong) UIImage *shadowImage NS_AVAILABLE_IOS(6_0) 
 
-![Snip20160809_7.png](http://upload-images.jianshu.io/upload_images/1711673-8c9b171d87d37b9c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-
-![Snip20160809_8.png](http://upload-images.jianshu.io/upload_images/1711673-e25a72de3dcc9b7e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-
-我们可以看到,我们并没有使控制器成为button的响应者,只是持有了button中块的定义,我们在button中调用后,就会自然相应到控制器中定义的块中,是不是很方便呢?
-
-
-----------------
+```
+一个是背景图片,一个是下划线,如果我们不处理shadowImage,那么系统会默认给出一条线,如图所示
+![Snip20160811_3.png](http://upload-images.jianshu.io/upload_images/1711673-edbb2ebab5d783ee.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+同样的如果不处理backgroundImage,系统也会默认给出一张图片,如图所示
+![Snip20160811_4.png](http://upload-images.jianshu.io/upload_images/1711673-34ca320c3e25aa8a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+我们只需要把空的图片对象作为这两个属性的值,那么就能达到我们想要的效果了.
+```
+[self.navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault];
+    self.navigationController.navigationBar.shadowImage = [UIImage new];
+```
+千万注意,一旦修改了这些属性,接下来不管你push还是pop.出现的导航栏都会相应改变,所以我们必须要在pop或者push之前再改变导航栏的状态.GIF中可以看出我返回的时候,之前的界面的按钮颜色也变成了白色,这就是我只改了导航栏颜色,而没有修改返回按钮颜色导致的.
+************
+就写到这里了.感谢看到这里的人.相关的代码都在demo上,有兴趣的人可以去下载.谢谢.
